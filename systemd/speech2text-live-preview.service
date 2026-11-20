@@ -1,0 +1,15 @@
+[Unit]
+Description=Speech2Text Live private CUDA backend
+After=graphical-session-pre.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/dev/gnome-speech2text-live
+ExecStart=/usr/bin/python3 -m live.server_supervisor --runtime %h/dev/gnome-speech2text-live/runtime/live-preview --model %h/.cache/whisper.cpp/ggml-small.bin --port 18080 -- %h/.local/bin/whisper-server --model %h/.cache/whisper.cpp/ggml-small.bin --host 127.0.0.1 --port 18080 --inference-path /inference --device 0
+Restart=no
+KillMode=control-group
+TimeoutStopSec=10s
+
+[Install]
+WantedBy=graphical-session.target

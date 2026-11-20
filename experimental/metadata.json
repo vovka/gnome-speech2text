@@ -1,0 +1,8 @@
+{
+  "uuid": "speech2text-live-study@local.invalid",
+  "name": "Speech2Text Live",
+  "description": "Local GPU hold-to-dictate with Copy-preview. No automatic typing or submission; IBus is unavailable.",
+  "shell-version": ["46", "47"],
+  "version": 1,
+  "settings-schema": "org.gnome.shell.extensions.speech2text-live-study"
+}

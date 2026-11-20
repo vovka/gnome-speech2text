@@ -51,6 +51,10 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
+# Local runtime and private deployment evidence
+/runtime/
+/artifacts/
+
 # Project specific
 /archive/
 /test/

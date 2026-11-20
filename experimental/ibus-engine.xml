@@ -1,0 +1,16 @@
+<!-- Inert descriptor only: not installed, registered, or selected by this project. -->
+<component>
+  <name>org.gnome.Shell.Extensions.Speech2TextLiveStudy</name>
+  <description>Unregistered guarded live-dictation study engine</description>
+  <engines>
+    <engine>
+      <name>speech2text-live-study</name>
+      <longname>Speech2Text Live Study (inert)</longname>
+      <description>Requires a separately approved cooperating GTK bridge</description>
+      <language>en</language>
+      <license>MIT</license>
+      <author>Local study</author>
+      <layout>us</layout>
+    </engine>
+  </engines>
+</component>

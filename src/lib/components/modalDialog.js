@@ -13,7 +13,11 @@ import { Logger } from "../logger.js";
  * No logic, no decisions - just shows what it's told
  */
 export class ModalDialog {
-  constructor() {
+  constructor({ liveOnly = false } = {}) {
+    this.liveOnly = liveOnly;
+    this.liveWriting = false;
+    this.onLiveEdit = null;
+    this.onLiveChanged = null;
     this.logger = new Logger("ModalDialog");
     this.modalBarrier = null;
     this.container = null;
@@ -338,7 +342,7 @@ export class ModalDialog {
     buttonBox.x_align = Clutter.ActorAlign.CENTER;
 
     // Insert button (X11 only)
-    if (!isWayland) {
+    if (!isWayland && !this.liveOnly) {
       const insertButton = createHoverButton(
         "Insert Text",
         COLORS.SUCCESS,
@@ -356,7 +360,7 @@ export class ModalDialog {
 
     // Copy button
     const copyButton = createHoverButton(
-      isWayland ? "Copy" : "Copy Only",
+      isWayland || this.liveOnly ? "Copy" : "Copy Only",
       COLORS.INFO,
       "#0077ee"
     );
@@ -384,7 +388,9 @@ export class ModalDialog {
 
     // Keyboard hint
     const keyboardHint = new St.Label({
-      text: "Press Enter to copy • Escape to cancel",
+      text: this.liveOnly
+        ? "Live preview • Edit to stop capture • Click Copy explicitly • Escape to cancel"
+        : "Press Enter to copy • Escape to cancel",
       style: `font-size: 12px; color: ${COLORS.DARK_GRAY}; text-align: center; margin-top: 10px;`,
     });
 
@@ -392,6 +398,25 @@ export class ModalDialog {
     this.previewContainer.add_child(this.previewTextEntry);
     this.previewContainer.add_child(buttonBox);
     this.previewContainer.add_child(keyboardHint);
+
+    if (this.liveOnly) {
+      this.liveStatusLabel = new St.Label({ text: "", style: "color: white;" });
+      this.previewContainer.add_child(this.liveStatusLabel);
+      // Clutter's mutation signals run before the default insert/delete handler.
+      // text-changed is the fail-closed fallback for other mutation paths.
+      for (const signal of ["insert-text", "delete-text"]) {
+        this.buttonConnections.push({
+          widget: clutterText,
+          signalId: clutterText.connect(signal, () => {
+            if (!this.liveWriting) this.onLiveEdit?.();
+          }),
+        });
+      }
+      this.buttonConnections.push({
+        widget: clutterText,
+        signalId: clutterText.connect("text-changed", () => this.onLiveChanged?.()),
+      });
+    }
   }
 
   /**
@@ -532,6 +557,40 @@ export class ModalDialog {
     this.previewContainer.show();
   }
 
+  // Live-only setup, once per hold; revisions must use replaceLiveText instead.
+  beginLivePreview() {
+    if (!this.liveOnly) throw new Error("Not a live preview dialog");
+    if (this.focusTimeoutId) {
+      GLib.Source.remove(this.focusTimeoutId);
+      this.focusTimeoutId = null;
+    }
+    this._hideAllContainers();
+    this.replaceLiveText("");
+    this.previewContainer.show();
+    if (!this.isOpen()) this.open({ focus: false });
+    this.previewTextEntry.grab_key_focus();
+  }
+
+  replaceLiveText(text) {
+    this.liveWriting = true;
+    try {
+      this.previewTextEntry.set_text(text);
+    } finally {
+      this.liveWriting = false;
+    }
+  }
+
+  openLivePreview() {
+    if (!this.liveOnly) throw new Error("Not a live preview dialog");
+    this._hideAllContainers();
+    this.previewContainer.show();
+    if (!this.isOpen()) this.open({ focus: false });
+  }
+
+  setLiveStatus(message) {
+    this.liveStatusLabel?.set_text(message);
+  }
+
   /**
    * Show ERROR state - just toggle visibility + update message
    * @param {string} message - Error message to display
@@ -550,7 +609,7 @@ export class ModalDialog {
   /**
    * Open the dialog
    */
-  open() {
+  open({ focus = true } = {}) {
     this.logger.info("Opening modal dialog");
 
     Main.layoutManager.addTopChrome(this.modalBarrier);
@@ -565,6 +624,9 @@ export class ModalDialog {
     );
 
     this.modalBarrier.show();
+
+    // Live revisions never schedule a focus grab.
+    if (!focus) return;
 
     // Focus
     if (this.focusTimeoutId) {
