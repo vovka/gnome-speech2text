@@ -1,0 +1,39 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.speech2text-live-study" path="/org/gnome/shell/extensions/speech2text-live-study/">
+    <key name="mode" type="s">
+      <choices><choice value="preview"/><choice value="ibus"/></choices>
+      <default>'preview'</default>
+      <summary>Preview or passive IBus mode</summary>
+      <description>IBus mode creates no Shell UI, runner or shortcut. The separately registered engine owns its trigger.</description>
+    </key>
+    <key name="project-root" type="s">
+      <default>''</default>
+      <summary>Absolute study project root containing live.preview_runner</summary>
+    </key>
+    <key name="runner-config" type="s">
+      <default>''</default>
+      <summary>Explicit operator-owned live runner configuration</summary>
+      <description>Empty disables capture and inference. A configured file is still subject to runtime attestation checks.</description>
+    </key>
+    <key name="preview-hold" type="as">
+      <default>['F8']</default>
+      <summary>Experimental F8 hold activation</summary>
+      <description>Keep F8: raw release tracking is hard-coded to F8.</description>
+    </key>
+    <key name="preview-trigger" type="as">
+      <default>['&lt;Alt&gt;&lt;Super&gt;space']</default>
+      <summary>Live dictation shortcut</summary>
+    </key>
+    <key name="trigger-mode" type="s">
+      <choices><choice value="toggle"/><choice value="hold"/></choices>
+      <default>'toggle'</default>
+      <summary>Push-push or push-to-talk</summary>
+    </key>
+    <key name="max-hold-seconds" type="i">
+      <range min="5" max="300"/>
+      <default>30</default>
+      <summary>Maximum hold duration</summary>
+      <description>Recording is cancelled rather than finalized when this safety limit expires.</description>
+    </key>
+  </schema>
+</schemalist>

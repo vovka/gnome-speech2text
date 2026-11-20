@@ -1,5 +1,11 @@
 # GNOME Speech2Text using Whisper.cpp
 
+## Experimental live Copy-preview
+
+For local GPU live dictation with an editable preview and explicit Copy, see [Speech2Text Live setup](experimental/PUBLIC-SETUP.md). It is an isolated experimental extension with its own backend and different safety and delivery behavior.
+
+## Original extension (legacy instructions)
+
 **Press shortcut → Speak → Get Text**
 
 Local speech-to-text for GNOME Shell. No cloud. No APIs.
